@@ -39,6 +39,7 @@ from api.pagination import *
 import json, datetime, pytz
 from django.core import serializers
 import requests
+import bleach
 
 
 def home(request):
@@ -316,11 +317,14 @@ class ActivateIFTTT(APIView):
         print 'REQUEST DATA'
         print str(request.data)
 
-        eventtype = request.data.get('eventtype')
+        eventtype = bleach.clean(request.data.get('eventtype'))
         timestamp = int(request.data.get('timestamp'))
         requestor = request.META['REMOTE_ADDR']
         api_key = ApiKey.objects.all().first()
         event_hook = "test"
+
+        if eventtype != request.data.get('eventtype'):
+            return Response({'success':False}, status=status.HTTP_400_BAD_REQUEST)
 
         print "Creating New event"
 
